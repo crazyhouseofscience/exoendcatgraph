@@ -1,0 +1,14 @@
+# Mac OS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+
+# Code editor workspace files (optional, but good practice)
+.vscode/
+.idea/
+
+# If you ever decide to add a backend or node modules later
+node_modules/
+npm-debug.log

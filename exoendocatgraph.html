@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Keith Chapman (2026) using Gemini AI">
+    <meta name="description" content="Interactive Chemistry Energy Profiles and Collision Theory Simulator">
+    <title>Accurate Chemistry Energy Profiles</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; background: #f4f6f8; padding: 20px; color: #333; }
+        #container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; max-width: 1000px; width: 100%; }
+        
+        .module-title { font-size: 1.8em; color: #2980b9; margin-bottom: 5px; font-weight: bold; }
+        .equation-box { font-size: 1.4em; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
+        .highlight-reactants { color: #d35400; }
+        .highlight-products { color: #27ae60; }
+        
+        canvas { border: 1px solid #e0e0e0; border-radius: 8px; margin: 10px 0; background: #fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); }
+        
+        .status-box { height: 25px; font-size: 1.2em; font-weight: bold; color: #8e44ad; margin-bottom: 10px; }
+        
+        /* Dashboard Styles */
+        .dashboard { display: flex; justify-content: space-around; background: #2c3e50; color: white; padding: 15px; border-radius: 8px; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.15); gap: 10px; }
+        .metric { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .metric-label { font-size: 0.85em; color: #bdc3c7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-align: center; }
+        .metric-value { font-size: 1.8em; font-weight: bold; color: #f1c40f; font-variant-numeric: tabular-nums; transition: color 0.3s; }
+        .temp-color { color: #e74c3c; } 
+        .ke-color { color: #2ecc71; } 
+
+        /* Control Styles */
+        .controls-wrapper { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 20px 0; padding: 15px; background: #ecf0f1; border-radius: 8px; }
+        .play-btn { padding: 12px 24px; font-size: 18px; cursor: pointer; background: #27ae60; color: white; border: none; border-radius: 50px; transition: 0.2s; font-weight: bold; width: 140px; }
+        .play-btn:hover { background: #219150; transform: scale(1.05); }
+        .play-btn.paused { background: #e67e22; }
+        .play-btn.paused:hover { background: #d35400; }
+        input[type=range] { width: 60%; cursor: pointer; height: 8px; }
+        
+        .mode-btn { padding: 12px 30px; font-size: 16px; cursor: pointer; background: #2980b9; color: white; border: none; border-radius: 6px; transition: 0.2s; font-weight: bold; margin-bottom: 10px; }
+        .mode-btn:hover { background: #1f618d; transform: translateY(-2px); }
+
+        /* Summary Section Styles */
+        .summary-section { margin-top: 30px; text-align: left; border-top: 2px solid #ecf0f1; padding-top: 20px; }
+        .summary-section h3 { color: #2c3e50; text-align: center; margin-bottom: 20px; font-size: 1.6em; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 0.95em; }
+        th, td { padding: 12px 15px; border: 1px solid #ddd; text-align: left; line-height: 1.4; }
+        th { background-color: #f2f6f8; color: #2c3e50; font-size: 1.05em; text-align: center;}
+        .table-exo { background-color: #fdf2e9; } 
+        .table-endo { background-color: #ebf5fb; } 
+        .table-cat { background-color: #fef9e7; }
+
+        /* Author Footer */
+        .footer-credit { margin-top: 25px; font-size: 0.95em; color: #7f8c8d; text-align: center; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <div class="module-title" id="moduleTitle">Graph 1: Exothermic Reaction</div>
+        <div class="equation-box" id="equation">--</div>
+        <div class="status-box" id="statusText">Reactants are stable.</div>
+        
+        <canvas id="mainCanvas" width="760" height="450"></canvas>
+        
+        <div class="dashboard">
+            <div class="metric">
+                <div class="metric-label" id="label-1">Potential Energy (PE)</div>
+                <div class="metric-value" id="val-1">1000 kJ</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" id="label-2">Kinetic Energy (KE)</div>
+                <div class="metric-value ke-color" id="val-2">500 kJ</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" id="label-3">Thermometer</div>
+                <div class="metric-value temp-color" id="val-3">25.0 °C</div>
+            </div>
+        </div>
+
+        <div class="controls-wrapper">
+            <button id="playBtn" class="play-btn">▶ Play</button>
+            <input type="range" id="progressSlider" min="0" max="1" step="0.005" value="0">
+        </div>
+        
+        <div>
+            <button id="modeBtn" class="mode-btn">Next: Switch to Endothermic Graph</button>
+        </div>
+
+        <div class="summary-section">
+            <h3>Kinetics & Collision Theory Summary</h3>
+            <table>
+                <tr>
+                    <th>Concept</th>
+                    <th class="table-exo">Graphs 1 & 2 (Thermodynamics)</th>
+                    <th class="table-cat">Graph 3 (Catalysis)</th>
+                    <th class="table-endo">Graph 4 (Temperature)</th>
+                </tr>
+                <tr>
+                    <td><strong>Activation Energy (Ea)</strong></td>
+                    <td class="table-exo">A fixed energy barrier the molecules must overcome to react.</td>
+                    <td class="table-cat">A catalyst acts as a shortcut, physically <strong>lowering</strong> the height of the Ea barrier.</td>
+                    <td class="table-endo">Temperature does <strong>not</strong> change the barrier. The Ea line stays exactly the same.</td>
+                </tr>
+                <tr>
+                    <td><strong>Kinetic Energy (KE)</strong></td>
+                    <td class="table-exo">Converted to PE to break bonds, then created as new bonds form.</td>
+                    <td class="table-cat">Molecules need less KE to successfully cross the lowered barrier.</td>
+                    <td class="table-endo">Heating the system gives the entire population a higher average KE, shifting the curve right.</td>
+                </tr>
+                <tr>
+                    <td><strong>Why is the reaction faster?</strong></td>
+                    <td class="table-exo">N/A (Depends on temp/catalyst)</td>
+                    <td class="table-cat">Because the barrier is smaller, a higher % of normal molecules can easily cross it.</td>
+                    <td class="table-endo">Because the molecules are faster, a higher % of them now have enough energy to cross the normal barrier.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer-credit">
+        Designed by Keith Chapman 2026 using Gemini AI
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            const moduleTitle = document.getElementById('moduleTitle');
+            const equation = document.getElementById('equation');
+            const statusText = document.getElementById('statusText');
+            const slider = document.getElementById('progressSlider');
+            const playBtn = document.getElementById('playBtn');
+            const modeBtn = document.getElementById('modeBtn');
+            
+            const label1 = document.getElementById('label-1');
+            const val1 = document.getElementById('val-1');
+            const label2 = document.getElementById('label-2');
+            const val2 = document.getElementById('val-2');
+            const label3 = document.getElementById('label-3');
+            const val3 = document.getElementById('val-3');
+
+            let currentMode = 1; 
+            let progress = 0;
+            let isPlaying = false;
+            
+            const config = { x0: 70, x1: 180, x2: 440, x3: 560, cpXOffset: 80 };
+
+            let particles = [];
+            const numParticles = 80;
+            const reactThreshold = 4.0; 
+
+            const modules = {
+                1: {
+                    title: "Graph 1: Exothermic Reaction",
+                    eq: "<span class='highlight-reactants'>CH<sub>4</sub> + 2O<sub>2</sub></span> &rarr; <span class='highlight-products'>CO<sub>2</sub> + 2H<sub>2</sub>O</span> + Heat",
+                    btnText: "Next: Switch to Endothermic Graph",
+                    rY: 150, pY: 350, cpY: -16.6, peakY: 50
+                },
+                2: {
+                    title: "Graph 2: Endothermic Reaction",
+                    eq: "<span class='highlight-reactants'>N<sub>2</sub> + O<sub>2</sub></span> + Heat &rarr; <span class='highlight-products'>2NO</span>",
+                    btnText: "Next: Switch to Catalysis Comparison",
+                    rY: 350, pY: 150, cpY: -16.6, peakY: 50
+                },
+                3: {
+                    title: "Graph 3: Catalysis (Exothermic Race)",
+                    eq: "<span class='highlight-reactants'>2H<sub>2</sub>O<sub>2</sub></span> <span style='font-size:0.7em;'>MnO<sub>2</sub></span>&rarr; <span class='highlight-products'>2H<sub>2</sub>O + O<sub>2</sub></span>",
+                    btnText: "Next: Maxwell-Boltzmann Distribution",
+                    rY: 150, pY: 350, uncatCpY: -16.6, uncatPeakY: 50, catCpY: 50, catPeakY: 100
+                },
+                4: {
+                    title: "Graph 4: Collision Theory & Temperature",
+                    eq: "Heat pushes molecules past <span style='color:#8e44ad'>E<sub>a</sub></span> &rarr; Fast molecules <span style='color:#f1c40f'>glow yellow!</span>",
+                    btnText: "Back to Graph 1 (Exothermic)"
+                }
+            };
+
+            function initParticles() {
+                particles = [];
+                for(let i = 0; i < numParticles; i++) {
+                    let angle = Math.random() * Math.PI * 2;
+                    let baseSpeed = 0.5 + (Math.random() * Math.random()) * 2.5; 
+                    particles.push({
+                        x: 480 + Math.random() * 240,
+                        y: 70 + Math.random() * 320,
+                        vx: Math.cos(angle) * baseSpeed,
+                        vy: Math.sin(angle) * baseSpeed,
+                        baseSpeed: baseSpeed
+                    });
+                }
+            }
+
+            function updateDashboardReaction(ballY) {
+                let pe = 0; let ke = 0; let temp = 25.0;
+
+                if (currentMode === 1 || currentMode === 3) {
+                    pe = 110 + (350 - ballY) * 4.45;
+                    ke = 1500 - pe;
+                    if (pe > 1000) temp = 25 - ((pe - 1000) * (5 / 445)); 
+                    else temp = 25 + ((1000 - pe) * (55 / 890)); 
+                } else {
+                    pe = 100 + (350 - ballY) * 0.15;
+                    ke = 600 - pe;
+                    if (pe > 100) temp = 25 - ((pe - 100) * (23 / 45)); 
+                    else temp = 25;
+                }
+
+                val1.innerText = pe.toFixed(0) + " kJ";
+                val2.innerText = ke.toFixed(0) + " kJ";
+                val3.innerText = temp.toFixed(1) + " °C";
+
+                if (temp > 30) val3.style.color = "#e74c3c"; 
+                else if (temp < 20) val3.style.color = "#3498db"; 
+                else val3.style.color = "#f1c40f"; 
+            }
+
+            function updateDashboardMaxwell(tempK, percentReacting) {
+                val1.innerText = "Increasing..."; 
+                val2.innerText = percentReacting.toFixed(1) + " %"; 
+                val3.innerText = tempK.toFixed(0) + " K"; 
+
+                if (tempK > 400) val3.style.color = "#e74c3c"; 
+                else if (tempK < 350) val3.style.color = "#3498db"; 
+                else val3.style.color = "#f1c40f"; 
+            }
+
+            function togglePlay() {
+                isPlaying = !isPlaying;
+                if (isPlaying) {
+                    playBtn.innerHTML = "⏸ Pause";
+                    playBtn.classList.add("paused");
+                    if (progress >= 1) progress = 0; 
+                } else {
+                    playBtn.innerHTML = "▶ Play";
+                    playBtn.classList.remove("paused");
+                }
+            }
+
+            playBtn.addEventListener('click', togglePlay);
+            
+            modeBtn.addEventListener('click', () => {
+                currentMode = (currentMode >= 4) ? 1 : currentMode + 1;
+                progress = 0; slider.value = 0;
+                if (isPlaying) togglePlay(); 
+                updateStatusText();
+                
+                const m = modules[currentMode];
+                moduleTitle.innerText = m.title;
+                equation.innerHTML = m.eq;
+                modeBtn.innerText = m.btnText;
+                
+                if (currentMode < 4) {
+                    label1.innerText = "Potential Energy (PE)";
+                    label2.innerText = "Kinetic Energy (KE)";
+                    label3.innerText = "Thermometer";
+                    val2.style.color = "#2ecc71";
+                } else {
+                    initParticles(); 
+                    label1.innerText = "Average KE";
+                    label2.innerText = "Able to React (E > Ea)";
+                    label3.innerText = "System Temperature";
+                    val2.style.color = "#e74c3c";
+                }
+                
+                drawScene();
+            });
+
+            slider.addEventListener('input', (e) => {
+                progress = parseFloat(e.target.value);
+                if (isPlaying) togglePlay(); 
+                updateStatusText();
+                if (currentMode < 4) drawScene();
+            });
+
+            function updateStatusText() {
+                if (currentMode < 4) {
+                    if (progress === 0) statusText.innerText = "Reactants are stable.";
+                    else if (progress > 0 && progress < 0.45) statusText.innerText = "Absorbing KE to break bonds (Slowing down)...";
+                    else if (progress >= 0.45 && progress <= 0.55) statusText.innerText = "Transition State reached (Slowest point)!";
+                    else if (progress > 0.55 && progress < 1) statusText.innerText = "Forming new bonds (Speeding up)...";
+                    else if (progress === 1) statusText.innerText = "Reaction complete.";
+                } else {
+                    if (progress === 0) statusText.innerText = "Cold: Particles are sluggish. Almost none can react.";
+                    else if (progress > 0 && progress < 0.5) statusText.innerText = "Warming: Curve flattens, particles move faster.";
+                    else if (progress >= 0.5 && progress < 1) statusText.innerText = "Hot: Huge spike in high-speed, reacting particles!";
+                    else if (progress === 1) statusText.innerText = "Maximum Heat. Fast reaction rate!";
+                }
+            }
+
+            function drawReactionAxes() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(50, 40); ctx.lineTo(50, 420); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(720, 420); ctx.stroke();
+                ctx.fillStyle = '#333'; ctx.font = "bold 14px sans-serif";
+                ctx.fillText("Potential Energy", 10, 30);
+                ctx.fillText("Reaction Progress", 580, 440);
+            }
+
+            function drawArrow(fromx, fromy, tox, toy) {
+                const headlen = 8;
+                const dx = tox - fromx; const dy = toy - fromy;
+                const angle = Math.atan2(dy, dx);
+                ctx.beginPath(); ctx.moveTo(fromx, fromy); ctx.lineTo(tox, toy);
+                ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(tox, toy);
+                ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+            }
+
+            function drawLabels(m, isCatalyzed) {
+                ctx.fillStyle = '#333'; ctx.font = "bold 15px sans-serif";
+                ctx.fillText("Reactants", config.x0, m.rY - 15);
+                ctx.fillText("Products", config.x2 + 10, m.pY - 15);
+
+                let peakY = isCatalyzed ? m.catPeakY : m.peakY || m.uncatPeakY;
+                let peakX = (config.x1 + config.x2) / 2;
+
+                ctx.fillStyle = '#c0392b';
+                ctx.beginPath(); ctx.arc(peakX, peakY, 5, 0, Math.PI*2); ctx.fill();
+                ctx.fillText("Transition State", peakX - 55, peakY - 15);
+
+                ctx.strokeStyle = '#8e44ad'; ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(config.x1, m.rY); ctx.lineTo(peakX + 50, m.rY); ctx.stroke(); 
+                ctx.setLineDash([]);
+                drawArrow(peakX + 10, m.rY, peakX + 10, peakY);
+                
+                ctx.fillStyle = '#8e44ad'; ctx.font = "bold 13px sans-serif";
+                ctx.fillText(isCatalyzed ? "Lower Activation Energy (Ea)" : "Activation Energy (Ea)", peakX + 20, (m.rY + peakY) / 2);
+
+                const deltaHX = config.x3 + 20;
+                ctx.strokeStyle = '#2980b9'; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(config.x1, m.rY); ctx.lineTo(deltaHX + 20, m.rY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(config.x2, m.pY); ctx.lineTo(deltaHX + 20, m.pY); ctx.stroke();
+                ctx.setLineDash([]);
+                drawArrow(deltaHX, m.rY, deltaHX, m.pY);
+                
+                ctx.fillStyle = '#2980b9'; ctx.font = "bold 14px sans-serif";
+                let deltaHText = (m.pY > m.rY) ? "ΔH / ΔE > 0" : "ΔH / ΔE < 0";
+                ctx.fillText("Total Energy Change", deltaHX + 15, (m.rY + m.pY) / 2 - 8);
+                ctx.fillText(deltaHText, deltaHX + 15, (m.rY + m.pY) / 2 + 12);
+            }
+
+            function drawCurve(m, t, isCatalyzed = false, isBackground = false) {
+                let cpY = isCatalyzed ? m.catCpY : (m.cpY || m.uncatCpY);
+                let peakY = isCatalyzed ? m.catPeakY : (m.peakY || m.uncatPeakY);
+
+                ctx.setLineDash(isCatalyzed ? [5, 5] : []);
+                ctx.strokeStyle = isBackground ? '#bdc3c7' : (isCatalyzed ? '#e67e22' : (currentMode === 1 ? '#e74c3c' : '#3498db'));
+                ctx.lineWidth = 3;
+                
+                ctx.beginPath(); ctx.moveTo(config.x0, m.rY); ctx.lineTo(config.x1, m.rY); 
+                ctx.bezierCurveTo(config.x1 + config.cpXOffset, cpY, config.x2 - config.cpXOffset, cpY, config.x2, m.pY);
+                ctx.lineTo(config.x3, m.pY); ctx.stroke(); ctx.setLineDash([]); 
+
+                if (!isBackground) drawLabels(m, isCatalyzed);
+                
+                let actualT = t;
+                if (isCatalyzed && currentMode === 3) actualT = Math.min(1.0, t * 1.4); 
+
+                let cx, cy;
+                const t1 = (config.x1 - config.x0) / (config.x3 - config.x0);
+                const t2 = (config.x2 - config.x0) / (config.x3 - config.x0);
+
+                if (actualT <= t1) {
+                    cx = config.x0 + (actualT / t1) * (config.x1 - config.x0); cy = m.rY;
+                } else if (actualT <= t2) {
+                    let localT = (actualT - t1) / (t2 - t1);
+                    let easingFactor = (isBackground || (!isCatalyzed && currentMode !== 3)) ? 0.14 : 0.08; 
+                    let physicsT = localT + easingFactor * Math.sin(localT * Math.PI * 2);
+                    cx = Math.pow(1-physicsT, 3)*config.x1 + 3*Math.pow(1-physicsT, 2)*physicsT*(config.x1+config.cpXOffset) + 3*(1-physicsT)*Math.pow(physicsT, 2)*(config.x2-config.cpXOffset) + Math.pow(physicsT, 3)*config.x2;
+                    cy = Math.pow(1-physicsT, 3)*m.rY + 3*Math.pow(1-physicsT, 2)*physicsT*cpY + 3*(1-physicsT)*Math.pow(physicsT, 2)*cpY + Math.pow(physicsT, 3)*m.pY;
+                } else {
+                    cx = config.x2 + ((actualT - t2) / (1 - t2)) * (config.x3 - config.x2); cy = m.pY;
+                }
+                
+                ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+                if (isBackground) { ctx.fillStyle = '#bdc3c7'; ctx.strokeStyle = '#95a5a6'; } 
+                else if (isCatalyzed) { ctx.fillStyle = '#e67e22'; ctx.strokeStyle = '#d35400'; } 
+                else { ctx.fillStyle = '#ecf0f1'; ctx.strokeStyle = '#2c3e50'; }
+                ctx.fill(); ctx.lineWidth = 3; ctx.stroke();
+
+                if (!isBackground && currentMode !== 3) updateDashboardReaction(cy);
+                else if (isBackground && currentMode === 3) updateDashboardReaction(cy);
+            }
+
+            function drawMaxwellSplit(t) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(50, 40); ctx.lineTo(50, 420); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(440, 420); ctx.stroke();
+                ctx.fillStyle = '#333'; ctx.font = "bold 14px sans-serif";
+                ctx.fillText("Number of Molecules", 10, 30);
+                ctx.fillText("Kinetic Energy (Speed) &rarr;", 250, 440);
+
+                let tempK = 300 + (t * 500);
+                let peakX = 80 + (t * 120); 
+                let heightMulti = 8000 / peakX; 
+                let eaLineX = 250; 
+                let areaReacting = 0; let totalArea = 0;
+                
+                ctx.beginPath(); ctx.moveTo(50, 420);
+                for(let x = 0; x <= 380; x += 5) {
+                    let normX = x / peakX;
+                    let yBase = normX * Math.exp(1 - normX);
+                    let canvasY = 420 - (yBase * heightMulti);
+                    ctx.lineTo(50 + x, canvasY);
+                    totalArea += yBase;
+                    if ((50 + x) >= eaLineX) areaReacting += yBase;
+                }
+                
+                let rColor = Math.floor(52 + (t * 179));
+                let bColor = Math.floor(219 - (t * 179));
+                ctx.strokeStyle = `rgb(${rColor}, 50, ${bColor})`;
+                ctx.lineWidth = 4; ctx.stroke();
+
+                ctx.fillStyle = `rgba(${rColor}, 50, ${bColor}, 0.3)`;
+                ctx.beginPath(); ctx.moveTo(eaLineX, 420);
+                for(let x = eaLineX - 50; x <= 380; x += 5) {
+                    let normX = x / peakX;
+                    let yBase = normX * Math.exp(1 - normX);
+                    let canvasY = 420 - (yBase * heightMulti);
+                    ctx.lineTo(50 + x, canvasY);
+                }
+                ctx.lineTo(430, 420); ctx.fill();
+
+                ctx.strokeStyle = '#8e44ad'; ctx.lineWidth = 3; ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.moveTo(eaLineX, 80); ctx.lineTo(eaLineX, 420); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#8e44ad'; ctx.font = "bold 14px sans-serif";
+                ctx.fillText("Ea", eaLineX - 10, 65);
+
+                ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2;
+                ctx.strokeRect(480, 50, 260, 370);
+                ctx.fillStyle = '#333';
+                ctx.fillText("Particle Container", 550, 40);
+
+                let tempMulti = 1 + (t * 2.2); 
+                for(let p of particles) {
+                    p.x += p.vx * tempMulti;
+                    p.y += p.vy * tempMulti;
+                    
+                    if (p.x < 485) { p.x = 485; p.vx *= -1; }
+                    if (p.x > 735) { p.x = 735; p.vx *= -1; }
+                    if (p.y < 55) { p.y = 55; p.vy *= -1; }
+                    if (p.y > 415) { p.y = 415; p.vy *= -1; }
+
+                    let currentSpeed = p.baseSpeed * tempMulti;
+                    
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+                    if (currentSpeed >= reactThreshold) {
+                        ctx.fillStyle = '#f1c40f'; 
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = '#f1c40f';
+                    } else {
+                        let ratio = Math.min(1, currentSpeed / reactThreshold);
+                        let pr = Math.floor(ratio * 255);
+                        let pb = Math.floor((1-ratio) * 255);
+                        ctx.fillStyle = `rgb(${pr}, 50, ${pb})`;
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+
+                let percentReacting = (areaReacting / totalArea) * 100;
+                updateDashboardMaxwell(tempK, percentReacting);
+            }
+
+            function drawScene() {
+                const m = modules[currentMode];
+                if (currentMode < 4) {
+                    drawReactionAxes();
+                    if (currentMode === 1 || currentMode === 2) {
+                        drawCurve(m, progress);
+                    } else if (currentMode === 3) {
+                        drawCurve(m, progress, false, true); 
+                        drawCurve(m, progress, true, false); 
+                    }
+                } else {
+                    drawMaxwellSplit(progress);
+                }
+            }
+
+            function masterLoop() {
+                if (currentMode === 4) {
+                    if (isPlaying && progress < 1) {
+                        progress += 0.002;
+                        if (progress >= 1) { progress = 1; togglePlay(); }
+                        slider.value = progress;
+                        updateStatusText();
+                    }
+                    drawScene(); 
+                } else {
+                    if (isPlaying) {
+                        progress += 0.0035;
+                        if (progress >= 1) { progress = 1; togglePlay(); }
+                        slider.value = progress;
+                        updateStatusText();
+                        drawScene();
+                    }
+                }
+                requestAnimationFrame(masterLoop);
+            }
+
+            // Start everything!
+            moduleTitle.innerText = modules[1].title;
+            equation.innerHTML = modules[1].eq;
+            initParticles();
+            drawScene();
+            masterLoop(); 
+
+        }); 
+    </script>
+</body>
+</html>

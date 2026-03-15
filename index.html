@@ -1,18 +1,4 @@
 <!DOCTYPE html>
-{
-import type { AppProps } from 'next/app';
-import { Analytics } from '@vercel/analytics/next';
- 
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Component {...pageProps} />
-      <Analytics />
-    </>
-  );
-}
- 
-export default MyApp;
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -527,5 +513,9 @@ export default MyApp;
 
         }); 
     </script>
+ 
+ <!-- Vercel Web Analytics (plain HTML) -->
+    /_vercel/insights/script.js</script>
+
 </body>
 </html>

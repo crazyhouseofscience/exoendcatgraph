@@ -63,11 +63,11 @@
         
         <div class="dashboard">
             <div class="metric">
-                <div class="metric-label" id="label-1">Potential Energy (PE)</div>
+                <div class="metric-label" id="label-1">Stored Energy (PE)</div>
                 <div class="metric-value" id="val-1">1000 kJ</div>
             </div>
             <div class="metric">
-                <div class="metric-label" id="label-2">Kinetic Energy (KE)</div>
+                <div class="metric-label" id="label-2">Speed Energy (KE)</div>
                 <div class="metric-value ke-color" id="val-2">500 kJ</div>
             </div>
             <div class="metric">
@@ -86,31 +86,31 @@
         </div>
 
         <div class="summary-section">
-            <h3>Kinetics & Collision Theory Summary</h3>
+            <h3>Reaction Cheat Sheet: How Things Speed Up</h3>
             <table>
                 <tr>
                     <th>Concept</th>
-                    <th class="table-exo">Graphs 1 & 2 (Thermodynamics)</th>
-                    <th class="table-cat">Graph 3 (Catalysis)</th>
-                    <th class="table-endo">Graph 4 (Temperature)</th>
+                    <th class="table-exo">Normal Reactions (Graphs 1 & 2)</th>
+                    <th class="table-cat">Adding a Catalyst (Graph 3)</th>
+                    <th class="table-endo">Adding Heat (Graph 4)</th>
                 </tr>
                 <tr>
-                    <td><strong>Activation Energy (Ea)</strong></td>
-                    <td class="table-exo">A fixed energy barrier the molecules must overcome to react.</td>
-                    <td class="table-cat">A catalyst acts as a shortcut, physically <strong>lowering</strong> the height of the Ea barrier.</td>
-                    <td class="table-endo">Temperature does <strong>not</strong> change the barrier. The Ea line stays exactly the same.</td>
+                    <td><strong>Activation Energy (The Hill)</strong></td>
+                    <td class="table-exo">The energy "hill" molecules must climb to start reacting.</td>
+                    <td class="table-cat">A catalyst builds a <strong>shortcut</strong>, physically lowering the hill.</td>
+                    <td class="table-endo">Heat does <strong>not</strong> change the hill. The hill stays the exact same size.</td>
                 </tr>
                 <tr>
-                    <td><strong>Kinetic Energy (KE)</strong></td>
-                    <td class="table-exo">Converted to PE to break bonds, then created as new bonds form.</td>
-                    <td class="table-cat">Molecules need less KE to successfully cross the lowered barrier.</td>
-                    <td class="table-endo">Heating the system gives the entire population a higher average KE, shifting the curve right.</td>
+                    <td><strong>Molecule Speed (Kinetic Energy)</strong></td>
+                    <td class="table-exo">Molecules slow down as they climb the hill, and speed up as they slide down.</td>
+                    <td class="table-cat">Because the hill is smaller, molecules don't need to be moving as fast to get over it.</td>
+                    <td class="table-endo">Heating the container makes almost all the molecules move much faster.</td>
                 </tr>
                 <tr>
-                    <td><strong>Why is the reaction faster?</strong></td>
-                    <td class="table-exo">N/A (Depends on temp/catalyst)</td>
-                    <td class="table-cat">Because the barrier is smaller, a higher % of normal molecules can easily cross it.</td>
-                    <td class="table-endo">Because the molecules are faster, a higher % of them now have enough energy to cross the normal barrier.</td>
+                    <td><strong>Why does it react faster?</strong></td>
+                    <td class="table-exo">Depends on the specific chemicals involved.</td>
+                    <td class="table-cat">A smaller hill means way more molecules can easily make it over.</td>
+                    <td class="table-endo">Faster molecules hit harder! More of them have the speed to blast over the normal hill.</td>
                 </tr>
             </table>
         </div>
@@ -151,27 +151,27 @@
 
             const modules = {
                 1: {
-                    title: "Graph 1: Exothermic Reaction",
+                    title: "Graph 1: Exothermic Reaction (Releases Heat)",
                     eq: "<span class='highlight-reactants'>CH<sub>4</sub> + 2O<sub>2</sub></span> &rarr; <span class='highlight-products'>CO<sub>2</sub> + 2H<sub>2</sub>O</span> + Heat",
                     btnText: "Next: Switch to Endothermic Graph",
                     rY: 150, pY: 350, cpY: -16.6, peakY: 50
                 },
                 2: {
-                    title: "Graph 2: Endothermic Reaction",
+                    title: "Graph 2: Endothermic Reaction (Absorbs Heat)",
                     eq: "<span class='highlight-reactants'>N<sub>2</sub> + O<sub>2</sub></span> + Heat &rarr; <span class='highlight-products'>2NO</span>",
                     btnText: "Next: Switch to Catalysis Comparison",
                     rY: 350, pY: 150, cpY: -16.6, peakY: 50
                 },
                 3: {
-                    title: "Graph 3: Catalysis (Exothermic Race)",
+                    title: "Graph 3: Catalysis (The Shortcut)",
                     eq: "<span class='highlight-reactants'>2H<sub>2</sub>O<sub>2</sub></span> <span style='font-size:0.7em;'>MnO<sub>2</sub></span>&rarr; <span class='highlight-products'>2H<sub>2</sub>O + O<sub>2</sub></span>",
-                    btnText: "Next: Maxwell-Boltzmann Distribution",
+                    btnText: "Next: Temperature & Collisions",
                     rY: 150, pY: 350, uncatCpY: -16.6, uncatPeakY: 50, catCpY: 50, catPeakY: 100
                 },
                 4: {
-                    title: "Graph 4: Collision Theory & Temperature",
-                    eq: "Heat pushes molecules past <span style='color:#8e44ad'>E<sub>a</sub></span> &rarr; Fast molecules <span style='color:#f1c40f'>glow yellow!</span>",
-                    btnText: "Back to Graph 1 (Exothermic)"
+                    title: "Graph 4: Temperature & Collisions",
+                    eq: "Heat pushes molecules past the <span style='color:#8e44ad'>Hill (E<sub>a</sub>)</span> &rarr; Fast ones <span style='color:#f1c40f'>glow yellow!</span>",
+                    btnText: "Back to Graph 1"
                 }
             };
 
@@ -215,7 +215,7 @@
             }
 
             function updateDashboardMaxwell(tempK, percentReacting) {
-                val1.innerText = "Increasing..."; 
+                val1.innerText = "Heating Up..."; 
                 val2.innerText = percentReacting.toFixed(1) + " %"; 
                 val3.innerText = tempK.toFixed(0) + " K"; 
 
@@ -250,14 +250,14 @@
                 modeBtn.innerText = m.btnText;
                 
                 if (currentMode < 4) {
-                    label1.innerText = "Potential Energy (PE)";
-                    label2.innerText = "Kinetic Energy (KE)";
+                    label1.innerText = "Stored Energy (PE)";
+                    label2.innerText = "Speed Energy (KE)";
                     label3.innerText = "Thermometer";
                     val2.style.color = "#2ecc71";
                 } else {
                     initParticles(); 
-                    label1.innerText = "Average KE";
-                    label2.innerText = "Able to React (E > Ea)";
+                    label1.innerText = "Average Speed";
+                    label2.innerText = "Able to React (Fast Enough)";
                     label3.innerText = "System Temperature";
                     val2.style.color = "#e74c3c";
                 }
@@ -275,9 +275,9 @@
             function updateStatusText() {
                 if (currentMode < 4) {
                     if (progress === 0) statusText.innerText = "Reactants are stable.";
-                    else if (progress > 0 && progress < 0.45) statusText.innerText = "Absorbing KE to break bonds (Slowing down)...";
+                    else if (progress > 0 && progress < 0.45) statusText.innerText = "Climbing the hill: Breaking bonds (Slowing down)...";
                     else if (progress >= 0.45 && progress <= 0.55) statusText.innerText = "Transition State reached (Slowest point)!";
-                    else if (progress > 0.55 && progress < 1) statusText.innerText = "Forming new bonds (Speeding up)...";
+                    else if (progress > 0.55 && progress < 1) statusText.innerText = "Going down the hill: Forming new bonds (Speeding up)...";
                     else if (progress === 1) statusText.innerText = "Reaction complete.";
                 } else {
                     if (progress === 0) statusText.innerText = "Cold: Particles are sluggish. Almost none can react.";
@@ -293,7 +293,7 @@
                 ctx.beginPath(); ctx.moveTo(50, 40); ctx.lineTo(50, 420); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(720, 420); ctx.stroke();
                 ctx.fillStyle = '#333'; ctx.font = "bold 14px sans-serif";
-                ctx.fillText("Potential Energy", 10, 30);
+                ctx.fillText("Stored Energy (PE)", 10, 30);
                 ctx.fillText("Reaction Progress", 580, 440);
             }
 
@@ -336,7 +336,7 @@
                 drawArrow(deltaHX, m.rY, deltaHX, m.pY);
                 
                 ctx.fillStyle = '#2980b9'; ctx.font = "bold 14px sans-serif";
-                let deltaHText = (m.pY > m.rY) ? "ΔH / ΔE > 0" : "ΔH / ΔE < 0";
+                let deltaHText = (m.pY > m.rY) ? "ΔH > 0 (Absorbs Heat)" : "ΔH < 0 (Releases Heat)";
                 ctx.fillText("Total Energy Change", deltaHX + 15, (m.rY + m.pY) / 2 - 8);
                 ctx.fillText(deltaHText, deltaHX + 15, (m.rY + m.pY) / 2 + 12);
             }
@@ -392,7 +392,7 @@
                 ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(440, 420); ctx.stroke();
                 ctx.fillStyle = '#333'; ctx.font = "bold 14px sans-serif";
                 ctx.fillText("Number of Molecules", 10, 30);
-                ctx.fillText("Kinetic Energy (Speed) &rarr;", 250, 440);
+                ctx.fillText("Speed of Molecules &rarr;", 250, 440);
 
                 let tempK = 300 + (t * 500);
                 let peakX = 80 + (t * 120); 
@@ -429,7 +429,7 @@
                 ctx.beginPath(); ctx.moveTo(eaLineX, 80); ctx.lineTo(eaLineX, 420); ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.fillStyle = '#8e44ad'; ctx.font = "bold 14px sans-serif";
-                ctx.fillText("Ea", eaLineX - 10, 65);
+                ctx.fillText("Ea (The Hill)", eaLineX - 20, 65);
 
                 ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2;
                 ctx.strokeRect(480, 50, 260, 370);
@@ -513,9 +513,5 @@
 
         }); 
     </script>
- 
- <!-- Vercel Web Analytics (plain HTML) -->
-    /_vercel/insights/script.js</script>
-
 </body>
 </html>
